@@ -7,7 +7,7 @@ use App\Models\Asset;
 use App\Models\AssetPrice;
 use App\Architect\HTTPRequest\HTTPRequest;
 use Symfony\Component\Console\Output\ConsoleOutput;
-
+use Carbon\Carbon;
 class UpdateAssetPrices extends Command
 {
     /**
@@ -41,6 +41,7 @@ class UpdateAssetPrices extends Command
      */
     public function handle()
     {
+        $now = new Carbon();
         $output = new ConsoleOutput();
         $assets = Asset::all();
 
@@ -54,15 +55,20 @@ class UpdateAssetPrices extends Command
             $timeSeriesBar = $this->output->createProgressBar(count((array) $timeSeries));
             $output->write("\n");
             $timeSeriesBar->start();
+            $AssetPriceBuffer = [];
             foreach ($timeSeries as $date => $assetDetailsOnDate) {
-                AssetPrice::create([
+                $AssetPriceBuffer[] = [
                     'asset_id' => $asset->id,
                     'timestamp' => $date,   
                     'price' => $assetDetailsOnDate->{'4. close'},
                     'trade_volume' => $assetDetailsOnDate->{'5. volume'},
-                ]);
+                    'created_at'=> $now,
+                    'updated_at'=> $now,
+                ]; 
                 $timeSeriesBar->advance();
             }
+            AssetPrice::insert($AssetPriceBuffer);
+            
             $timeSeriesBar->finish();
             $output->write("\033[1A");
             $assetBar->advance();
