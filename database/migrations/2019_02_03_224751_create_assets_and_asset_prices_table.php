@@ -27,7 +27,10 @@ class CreateAssetsAndAssetPricesTable extends Migration
 
             $table->unsignedInteger('asset_id');
             $table->foreign('asset_id')->references('id')->on('assets');
-            $table->decimal('price', 20, 8);
+            $table->decimal('open', 20, 8);
+            $table->decimal('close', 20, 8);
+            $table->decimal('high', 20, 8);
+            $table->decimal('low', 20, 8);
             $table->unsignedInteger('trade_volume');
             $table->dateTime('timestamp');
 

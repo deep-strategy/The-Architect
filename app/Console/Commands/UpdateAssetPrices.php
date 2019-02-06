@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Architect\AssetPriceProvider\AlphaVantageProvider;
+use App\Architect\AssetPriceProvider\AssetPriceProvider;
 use Illuminate\Console\Command;
 use App\Models\Asset;
 use App\Models\AssetPrice;
@@ -34,6 +36,11 @@ class UpdateAssetPrices extends Command
         parent::__construct();
     }
 
+    protected function getProvider(): AssetPriceProvider
+    {
+        return new AlphaVantageProvider();
+    }
+
     /**
      * Execute the console command.
      *
@@ -42,37 +49,25 @@ class UpdateAssetPrices extends Command
     public function handle()
     {
         $now = new Carbon();
-        $output = new ConsoleOutput();
         $assets = Asset::all();
-
-        $assetBar = $this->output->createProgressBar(count($assets));
-        $assetBar->start();
-
         foreach ($assets as $asset) {
-            $downloadedHistory = HTTPRequest::get("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=$asset->symbol&outputsize=full&apikey=" . env('ALPHAVANTAGE_KEY'));
-            $timeSeriesKey = "Time Series (Daily)";
-            $timeSeries = $downloadedHistory->$timeSeriesKey;
-            $timeSeriesBar = $this->output->createProgressBar(count((array) $timeSeries));
-            $output->write("\n");
-            $timeSeriesBar->start();
-            $AssetPriceBuffer = [];
-            foreach ($timeSeries as $date => $assetDetailsOnDate) {
-                $AssetPriceBuffer[] = [
+            $downloadedHistory = $this->getProvider()->fetchHistoricalData($asset->symbol);
+
+            $assetPriceBuffer = [];
+            foreach ($downloadedHistory as $assetDetailsOnDate) {
+                $assetPriceBuffer[] = [
                     'asset_id' => $asset->id,
-                    'timestamp' => $date,   
-                    'price' => $assetDetailsOnDate->{'4. close'},
-                    'trade_volume' => $assetDetailsOnDate->{'5. volume'},
+                    'timestamp' => $assetDetailsOnDate->timestamp,
+                    'high' => $assetDetailsOnDate->highPrice,
+                    'low' => $assetDetailsOnDate->lowPrice,
+                    'close' => $assetDetailsOnDate->closePrice,
+                    'open' => $assetDetailsOnDate->openPrice,
+                    'trade_volume' => $assetDetailsOnDate->tradeVolume,
                     'created_at'=> $now,
                     'updated_at'=> $now,
-                ]; 
-                $timeSeriesBar->advance();
+                ];
             }
-            AssetPrice::insert($AssetPriceBuffer);
-            
-            $timeSeriesBar->finish();
-            $output->write("\033[1A");
-            $assetBar->advance();
+            AssetPrice::insert($assetPriceBuffer);
         }
-        $assetBar->finish();
     }
 }
