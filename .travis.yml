@@ -8,7 +8,6 @@ php:
 
 before_script:
   - cp .env.travis .env
-  - composer self-update
   - composer install --no-interaction
   - phpenv rehash
   - mysql -e 'create database matrix;'
@@ -17,3 +16,19 @@ before_script:
 
 script:
   - vendor/bin/phpunit --coverage-text
+
+cache:
+  directories:
+    - $HOME/.composer/cache/files
+
+sudo: false
+
+addons:
+  apt:
+    sources:
+      - mysql-5.7-trusty
+    packages:
+      - mysql-server
+
+services:
+  - mysql
