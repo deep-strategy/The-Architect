@@ -1,0 +1,19 @@
+os:
+  - linux
+
+language: php
+
+php:
+  - '7.2'
+
+before_script:
+  - cp .env.travis .env
+  - composer self-update
+  - composer install --no-interaction
+  - phpenv rehash
+  - mysql -e 'create database matrix;'
+  - php artisan key:generate
+  - php artisan migrate
+
+script:
+  - vendor/bin/phpunit --coverage-text
