@@ -15,7 +15,7 @@ before_script:
   - php artisan migrate
 
 script:
-  - vendor/bin/phpunit --coverage-text
+  - vendor/bin/phpunit
 
 cache:
   directories:
