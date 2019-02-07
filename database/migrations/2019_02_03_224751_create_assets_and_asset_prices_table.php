@@ -34,6 +34,8 @@ class CreateAssetsAndAssetPricesTable extends Migration
             $table->unsignedInteger('trade_volume');
             $table->dateTime('timestamp');
 
+            $table->unique(['asset_id', 'timestamp']);
+
             $table->timestamps();
         });
     }

@@ -67,7 +67,8 @@ class UpdateAssetPrices extends Command
                     'updated_at'=> $now,
                 ];
             }
-            AssetPrice::insert($assetPriceBuffer);
+            AssetPrice::insertIgnore($assetPriceBuffer);
         }
+        return;
     }
 }
