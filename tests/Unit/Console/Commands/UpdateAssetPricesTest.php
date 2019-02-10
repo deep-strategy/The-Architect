@@ -5,6 +5,7 @@ namespace Tests\Unit\Console\Commands;
 use App\Architect\AssetPriceProvider\AssetPriceProvider;
 use App\Console\Commands\UpdateAssetPrices;
 use App\Models\AssetPrice;
+use App\Models\PriceFrequency;
 use Tests\TestCase;
 use Tests\Unit\Architect\AssetPriceProvider\TestProvider;
 
@@ -12,13 +13,12 @@ class UpdateAssetPricesTest extends TestCase
 {
     public function test_ShouldDownloadAndStoreOnDatabase()
     {
-
         $command = new UpdateAssetPricesForTests();
         $command->handle();
 
         $assetPricesSaved = AssetPrice::all();
         $firstAssetPrice = $assetPricesSaved->first();
-        $fakeData = (new TestProvider())->fetchHistoricalData('AAPL');
+        $fakeData = (new TestProvider())->fetchHistoricalData('AAPL', 'any');
 
         $this->assertCount(2, $assetPricesSaved);
         $this->assertEquals($fakeData[0]->openPrice, $firstAssetPrice->open);
@@ -38,6 +38,22 @@ class UpdateAssetPricesTest extends TestCase
         $assetPricesSaved = AssetPrice::all();
 
         $this->assertCount(2, $assetPricesSaved);
+    }
+
+    public function test_ShouldInsertRecordsWithDifferentPriceFrequencies()
+    {
+        $this->createPriceFrequency();
+        $command = new UpdateAssetPricesForTests();
+        $command->handle();
+
+        $assetPricesSaved = AssetPrice::all();
+
+        $this->assertCount(4, $assetPricesSaved);
+    }
+
+    protected function createPriceFrequency(): PriceFrequency
+    {
+        return factory(PriceFrequency::class)->create(['slug' => 'other_interval']);
     }
 }
 
