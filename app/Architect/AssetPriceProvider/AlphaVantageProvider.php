@@ -17,11 +17,12 @@ class AlphaVantageProvider implements AssetPriceProvider
 
     /**
      * @param string $symbol A symbol to an asset, for example 'AAPL'
+     * @param string $frequency
      * @return AssetPriceDetail[]
      */
-    public function fetchHistoricalData(string $symbol): array
+    public function fetchHistoricalData(string $symbol, string $frequency): array
     {
-        $timeSeries = $this->downloadFromAPI($symbol);
+        $timeSeries = $this->downloadFromAPI($symbol, $frequency);
         $historicalData = $this->formatTimeSeries($timeSeries);
         return $historicalData;
     }
@@ -46,15 +47,15 @@ class AlphaVantageProvider implements AssetPriceProvider
             $value->{"5. volume"});
     }
 
-    private function constructRequestUri($symbol): string
+    private function constructRequestUri(string $symbol, string $frequency): string
     {
-        return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=$symbol&outputsize=full&apikey=" . config('services.alphavantage.key');
+        return "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=$symbol&interval=$frequency&outputsize=full&apikey=" . config('services.alphavantage.key');
     }
 
-    private function downloadFromAPI(string $symbol): array
+    private function downloadFromAPI(string $symbol, string $frequency): array
     {
-        $downloadedHistory = HTTPRequest::get($this->constructRequestUri($symbol));
-        $timeSeries = (array)$downloadedHistory->{"Time Series (Daily)"};
+        $downloadedHistory = HTTPRequest::get($this->constructRequestUri($symbol, $frequency));
+        $timeSeries = (array)$downloadedHistory->{"Time Series ({$frequency})"};
         return $timeSeries;
     }
 }
