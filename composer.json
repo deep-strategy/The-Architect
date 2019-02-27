@@ -7,13 +7,20 @@
         "laravel"
     ],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/thiagopromano/eloquent-insert-on-duplicate-key"
+        }
+    ],
     "require": {
         "php": "^7.1.3",
         "fideloper/proxy": "^4.0",
-        "guidocella/eloquent-insert-on-duplicate-key": "^2.2",
-        "laravel/framework": "5.7.*",
+        "thiagopromano/laravel-insert-on-duplicate-key": "dev-master",
+        "laravel/framework": "5.8.*",
         "laravel/telescope": "^1.0",
-        "laravel/tinker": "^1.0"
+        "laravel/tinker": "^1.0",
+        "guzzlehttp/guzzle": "^6.3"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.0",
